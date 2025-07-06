@@ -1,0 +1,213 @@
+
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lounich Calculator</title>
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: #fff7fa;
+      color: #444;
+      margin: 0;
+      padding: 0 0 180px 0;
+      text-align: center;
+    }
+    h1 {
+      color: #ff69b4;
+      margin-top: 30px;
+      font-size: 2.5rem;
+    }
+    .subtitle {
+      margin-top: 10px;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+    .calculator, .form-section {
+      background: #fff;
+      max-width: 400px;
+      margin: 30px auto;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(255, 105, 180, 0.2);
+      position: relative;
+    }
+    .calculator input, .form-section input {
+      width: 85%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      font-size: 1.1rem;
+    }
+    .note {
+      font-size: 0.95rem;
+      color: #777;
+      margin-top: 8px;
+    }
+    .result {
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 1.3rem;
+      color: #d63384;
+    }
+    button {
+      background: #ff69b4;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #ff85c1;
+    }
+    .moon {
+      position: absolute;
+      top: -30px;
+      left: -30px;
+      font-size: 3rem;
+      color: #ffe4ec;
+    }
+    .confirmation {
+      background-color: #fff0f5;
+      margin: 20px auto;
+      padding: 15px;
+      border-radius: 10px;
+      max-width: 400px;
+    }
+    .confirmation textarea {
+      width: 90%;
+      height: 120px;
+      font-size: 1rem;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+    .tutorial-text {
+      background: #ffeaf3;
+      padding: 20px;
+      border-radius: 15px;
+      max-width: 400px;
+      margin: 20px auto;
+      font-size: 1rem;
+    }
+    .tutorial-text a {
+      display: inline-block;
+      margin-top: 10px;
+      background: #ff69b4;
+      color: white;
+      text-decoration: none;
+      padding: 10px 25px;
+      border-radius: 30px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Lounich Calculator</h1>
+  <div class="subtitle">
+    <p>🇫🇷 Calculez le prix réel de n’importe quel article Shein.</p>
+    <p>🇸🇦 احسب السعر الحقيقي لأي منتج من شي إن.</p>
+    <p>🇬🇧 Calculate the real price of any Shein item.</p>
+  </div>
+
+  <div class="calculator">
+    <div class="moon">🌙</div>
+    <input type="number" id="usdInput" placeholder="أدخلي السعر بالدولار 💸" />
+    <input type="number" id="discountInput" placeholder="نسبة التخفيض (اختياري)" />
+    <div class="note">💡 أدخلي السعر المكتوب بالأسود في شي إن</div>
+    <br/>
+    <button onclick="calculatePrice()">احسبي السعر</button>
+    <div class="result" id="result"></div>
+  </div>
+
+  <div class="form-section">
+    <h2>📦 أطلبي الآن</h2>
+    <form id="orderForm">
+      <input type="text" id="name" placeholder="الاسم" required><br>
+      <input type="text" id="product" placeholder="رابط المنتج أو رابط السلة" required><br>
+      <input type="text" id="size" placeholder="المقاس" required><br>
+      <input type="text" id="city" placeholder="المدينة" required><br>
+      <input type="text" id="phone" placeholder="رقم الهاتف أو واتساب" required><br>
+      <button type="submit">📩 إرسال الطلب</button>
+    </form>
+  </div>
+
+  <div class="confirmation" id="confirmation" style="display:none;">
+    <p>✅ تم حساب السعر وإعداد الطلب بنجاح!</p>
+    <p>📋 انسخي الطلب التالي وارسليه لنا على الإنستغرام:</p>
+    <textarea id="copyText" readonly></textarea>
+    <button onclick="copyToClipboard()">📋 نسخ الطلب</button>
+    <a href="https://www.instagram.com/lounich_shop/" target="_blank">📩 افتحي صفحة إنستغرام</a>
+  </div>
+
+  <div class="tutorial-text">
+    للاستفسار عن كيفية استخدام الحاسبة للطلب، ارسلي رسالة إلى صفحتنا على الإنستغرام 💌
+    <br>
+    <a href="https://www.instagram.com/lounich_shop/" target="_blank">أرسل رسالة الآن</a>
+  </div>
+
+  <script>
+    function calculatePrice() {
+      let usd = parseFloat(document.getElementById("usdInput").value);
+      const discount = parseFloat(document.getElementById("discountInput").value);
+      if (isNaN(usd) || usd <= 0) {
+        document.getElementById("result").textContent = "⛔ أدخلي سعرًا صالحًا.";
+        return;
+      }
+
+      if (!isNaN(discount) && discount > 0 && discount < 100) {
+        let totalDiscount = usd * (discount / 100);
+        let clientShare = totalDiscount * 0.6;
+        usd = usd - clientShare;
+      }
+
+      const dzdRate = 260;
+      const dzd = usd * dzdRate;
+      let finalPrice = dzd;
+
+      if (dzd <= 400) finalPrice += 100;
+      else if (dzd <= 600) finalPrice += 200;
+      else if (dzd <= 2000) finalPrice += 300;
+      else if (dzd <= 5000) finalPrice += 500;
+      else if (dzd <= 8500) finalPrice += dzd * 0.1;
+      else finalPrice += dzd * 0.07;
+
+      document.getElementById("result").textContent =
+        `💎 السعر النهائي: ${Math.round(finalPrice)} دج`;
+    }
+
+    document.getElementById("orderForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      const product = document.getElementById("product").value;
+      const size = document.getElementById("size").value;
+      const city = document.getElementById("city").value;
+      const phone = document.getElementById("phone").value;
+
+      const message = `🔸 الاسم: ${name}\n🔸 المنتج: ${product}\n🔸 المقاس: ${size}\n🔸 المدينة: ${city}\n🔸 الهاتف: ${phone}`;
+      document.getElementById("copyText").value = message;
+      document.getElementById("orderForm").style.display = "none";
+      document.getElementById("confirmation").style.display = "block";
+
+      fetch("https://example.com/tracking", {
+        method: "POST",
+        body: JSON.stringify({ name, product, size, city, phone }),
+        headers: { "Content-Type": "application/json" }
+      });
+    });
+
+    function copyToClipboard() {
+      const textArea = document.getElementById("copyText");
+      textArea.select();
+      document.execCommand("copy");
+      alert("📋 تم نسخ الطلب! اذهبي الآن إلى إنستغرام والصقيه في الرسائل.");
+    }
+  </script>
+</body>
+</html>
